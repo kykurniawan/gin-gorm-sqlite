@@ -68,26 +68,54 @@ func (n *NoteHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusCreated, gin.H{
 		"message": "ok",
 		"data":    note,
 	})
 }
 
 func (n *NoteHandler) UpdateById(c *gin.Context) {
-	id := c.Param("id")
+	var updateNoteRequest requests.UpdateNoteRequest
+
+	c.Bind(&updateNoteRequest)
+
+	idString := c.Param("id")
+
+	id, _ := strconv.Atoi(idString)
+
+	note, err := n.noteRepository.UpdateById(id, updateNoteRequest)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "failed to update note",
+		})
+
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "ok",
-		"id":      id,
+		"message": "note updated",
+		"data":    note,
 	})
 }
 
 func (n *NoteHandler) DeleteById(c *gin.Context) {
-	id := c.Param("id")
+	idString := c.Param("id")
+
+	id, _ := strconv.Atoi(idString)
+
+	err := n.noteRepository.DeleteById(id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "failed to delete note",
+		})
+
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "ok",
-		"id":      id,
+		"data":    nil,
 	})
 }
